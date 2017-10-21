@@ -25,6 +25,7 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule)
     {
         $schedule->command('indicator:calculate')
-            ->twiceDaily(1, 13);
+            //->twiceDaily(1, 13);
+        ->everyFiveMinutes();
     }
 }
