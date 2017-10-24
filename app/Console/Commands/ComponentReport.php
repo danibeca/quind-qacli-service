@@ -46,7 +46,16 @@ class ComponentReport extends Command
             {
                 $extenalMetrics = $metricsArray[$component->quality_system_id];
                 $metricsValues = $extenalMetric->getFromServer($component, $extenalMetrics);
-                $extenalMetric->save($key, $component, $metricsValues, $qalogServer);
+
+                $result = [];
+                $collectionExternalMetrics = collect($extenalMetrics);
+                foreach ($metricsValues as $metricsValue)
+                {
+                    $metricsValue['metric_id'] = $collectionExternalMetrics->where('code', $metricsValue['code'])->first()->metric_id;
+                    array_push($result, $metricsValue);
+                }
+
+                $extenalMetric->save($key, $component, $result, $qalogServer);
 
                 $issuesValues = $issue->getFromServer($component);
                 $issue->save($key, $component, $issuesValues, $qalogServer);

@@ -26,6 +26,6 @@ class Kernel extends ConsoleKernel
     {
         $schedule->command('component:report')
             //->twiceDaily(1, 13);
-        ->everyFiveMinutes();
+        ->everyMinute();
     }
 }
