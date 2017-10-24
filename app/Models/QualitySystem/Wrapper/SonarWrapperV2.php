@@ -33,17 +33,24 @@ abstract class SonarWrapperV2 extends QualityPlatformWrapper
 
     public function getExternalMetricTypeOne($projectId, $stringMetrics)
     {
-        return $this->transformCollection(
-            $this->readMetricsTypeOneResponse(
-                $this->request(
-                    $this->getMetricsTypeOneUrl($projectId, $stringMetrics))));
+        try
+        {
+            return $this->transformCollection(
+                $this->readMetricsTypeOneResponse(
+                    $this->request(
+                        $this->getMetricsTypeOneUrl($projectId, $stringMetrics))));
+
+        } catch (\Exception $e)
+        {
+
+        }
 
     }
 
     public function getOpenIssueUrl($projectId, $page = 1)
     {
         $result['base'] = $this->serverAPI;
-        $result['resource'] = '/issues/search?componentKeys=' . $projectId . '&statuses=OPEN,REOPENED&p=' . $page;
+        $result['resource'] = '/api/issues/search?componentKeys=' . $projectId . '&statuses=OPEN,REOPENED&p=' . $page;
 
         return $result;
     }
@@ -69,7 +76,7 @@ abstract class SonarWrapperV2 extends QualityPlatformWrapper
         $pages = ($pages > 0) ? $pages : 1;
         for ($i = 1; $i <= $pages; $i++)
         {
-            $result = (object)array_merge((array)$result,(array)$this->readOpenIssueResponse(
+            $result = (object) array_merge((array) $result, (array) $this->readOpenIssueResponse(
                 $this->request(
                     $this->getOpenIssueUrl($projectId, $i))));
         }

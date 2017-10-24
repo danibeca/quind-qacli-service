@@ -24,7 +24,7 @@ class HTTPWrapper
 
     public function get($url)
     {
-        Log::info($url);
+        //Log::info($url);
 
         try
         {

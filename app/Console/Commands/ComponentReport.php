@@ -14,43 +14,44 @@ class ComponentReport extends Command
 {
 
 
-    protected $signature = 'component:report {--componentId=} {--key=}';
+    protected $signature = 'component:report';
     protected $description = 'Report information about components';
     protected $accounts;
 
     public function handle()
     {
-        $qalogServer = 'http://qalog.quind.io/api/v1';
+        $qalogServer = env('QUIND_ENDPOINT');
+        $key = '';
 
-        $componentId = is_null($this->option('componentId')) ? 1 : $this->option('componentId');
-        $key = is_null($this->option('key')) ? 'testing' : $this->option('key');
+        $serviceURL = $qalogServer . '/api-clients/' . env('CLIENT_CODE') . '/roots';
+        $wrapper = new HTTPWrapper();
+        $rootIds = $wrapper->get($serviceURL);
 
-        $component = new Component();
-        $components = $component->getLeaves($key, $componentId, $qalogServer);
-
-        $qaSystemIds = $components->pluck('quality_system_id')->unique();
-
-        $metricsArray = array();
-        foreach ($qaSystemIds as $qaSystemId)
+        foreach ($rootIds as $rootId)
         {
-            $metric = new ExtenalMetric();
+            $component = new Component();
+            $components = $component->getLeaves($key, $rootId, $qalogServer);
+            $qaSystemIds = $components->pluck('quality_system_id')->unique();
 
-            $metricsArray[$qaSystemId] = $metric->getExtenalMetrics($key, $qaSystemId, $qalogServer);
+            $metricsArray = array();
+            foreach ($qaSystemIds as $qaSystemId)
+            {
+                $metric = new ExtenalMetric();
+                $metricsArray[$qaSystemId] = $metric->getExtenalMetrics($key, $qaSystemId, $qalogServer);
+            }
 
-        }
+            $extenalMetric = New ExtenalMetric();
+            $issue = New Issue();
+            foreach ($components as $component)
+            {
+                $extenalMetrics = $metricsArray[$component->quality_system_id];
+                $metricsValues = $extenalMetric->getFromServer($component, $extenalMetrics);
+                $extenalMetric->save($key, $component, $metricsValues, $qalogServer);
 
-
-        $extenalMetric = New ExtenalMetric();
-        $issue = New Issue();
-        foreach ($components as $component)
-        {
-            $extenalMetrics = $metricsArray[$component->quality_system_id];
-            $metricsValues = $extenalMetric->getFromServer($component, $extenalMetrics);
-            $extenalMetric->save($key, $component, $metricsValues, $qalogServer);
-
-            $issuesValues = $issue->getFromServer($component);
-            $issue->save($key, $component, $issuesValues, $qalogServer);
-
+                $issuesValues = $issue->getFromServer($component);
+                $issue->save($key, $component, $issuesValues, $qalogServer);
+            }
         }
     }
+
 }

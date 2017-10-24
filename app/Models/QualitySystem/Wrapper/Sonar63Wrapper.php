@@ -10,7 +10,7 @@ class Sonar63Wrapper extends SonarWrapperV2
     public function getMetricsTypeOneUrl($projectId, $stringMetrics)
     {
         $result['base'] = $this->serverAPI;
-        $result['resource'] = '/measures/component?componentKey=' . $projectId . '&metricKeys=' . $stringMetrics;
+        $result['resource'] = '/api/measures/component?componentKey=' . $projectId . '&metricKeys=' . $stringMetrics;
 
         return $result;
     }
